@@ -15,47 +15,49 @@ namespace GestionTareas.Application.Services
     {
         private readonly IJobRepository _jobRepository;
 
-        //Metodos para ahorrar lineas de codigo:
-        #region Metodos
-        private Job _convertirCreateDTOaEntidad(CreateJobDTO createJobDTO)
+        public JobService(IJobRepository job) => _jobRepository = job;
+        public Job ConvertirDTOaEntidad(CreateJobDTO dto)
         {
-            return new Job(createJobDTO.Description, createJobDTO.DueDate, createJobDTO.State, createJobDTO.AdditionalData);
-        }
-        private Job _convertirDTOaEntidad(JobDTO jobDTO)
-        {
-            return new Job(jobDTO.Id, jobDTO.Description, jobDTO.DueDate, jobDTO.State, jobDTO.AdditionalData);
-        }
-        private JobDTO _convertirCreateDTOaEntityDTO(int id, CreateJobDTO createJobDTO)
-        {
-            return new JobDTO(id, createJobDTO.Description, createJobDTO.DueDate, createJobDTO.State, createJobDTO.AdditionalData);
+            return new Job(
+                dto.Description,
+                dto.DueDate,
+                dto.State,
+                dto.AdditionalData
+            );
         }
 
-        private JobDTO _convertirEntityaEntityDTO(Job job)
+        public Job ConvertirDTOaEntidad(JobDTO dto)
         {
-            return new JobDTO(job.Id, job.Description, job.DueDate, job.State, job.AdditionalData);
+            return new Job(
+                dto.Id,
+                dto.Description,
+                dto.DueDate,
+                dto.State,
+                dto.AdditionalData
+            );
         }
-        #endregion
+
         public async Task<JobDTO> AddJob(CreateJobDTO j)
         {
-            var job = _convertirCreateDTOaEntidad(j);
 
+            var job = ConvertirDTOaEntidad(j);
             var jobc = await _jobRepository.AddJob(job);
 
-            var jobDTO = _convertirEntityaEntityDTO(jobc);
-            
+            var jobDTO = new JobDTO(jobc);
+
             return jobDTO;
         }
         public async Task<JobDTO> UpdateJob(JobDTO j)
         {
-            var job = _convertirDTOaEntidad(j);
+            var job = ConvertirDTOaEntidad(j);
 
             var jobc = await _jobRepository.UpdateJob(job);
 
-            var jobDTO = _convertirEntityaEntityDTO(jobc);
+            var jobDTO = new JobDTO(jobc);
 
             return jobDTO;
         }
-        public async void DeleteJob(int id)
+        public async Task DeleteJob(int id)
         {
             var j = _jobRepository.GetJob(id);
 
@@ -64,24 +66,19 @@ namespace GestionTareas.Application.Services
                 throw new Exception("El id que registras no existe ya en la base de datos.");
             }
 
-            await _jobRepository.DeleteJob(j);
+            await _jobRepository.DeleteJob(id);
 
         }
         public async Task<List<JobDTO>> GetAllJobs()
         {
-            return await _jobRepository.GetAllJobs(); 
+            var list = await _jobRepository.GetAllJobs();
+            var nlist = list.Select(x => new JobDTO(x)).ToList();
+            return nlist; 
         }
+
         public async Task<JobDTO> GetJob(int id)
         {
-            return null;
-        }
-        public async Task<List<JobDTO>> GetJobForDate(DateTime begin, DateTime end)
-        {
-            return null;
-        }
-        public async Task<List<JobDTO>> GetJobForState(State state)
-        {
-            return null;
+            return new JobDTO(await _jobRepository.GetJob(id));
         }
     }
 }

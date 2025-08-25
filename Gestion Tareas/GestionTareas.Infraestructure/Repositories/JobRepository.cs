@@ -29,7 +29,14 @@ namespace GestionTareas.Infraestructure.Repositories
             return j;
         }
 
-        public async void DeleteJob(Job j)
+        public async Task DeleteJob(int id)
+        {
+            var j = await GetJob(id);
+            _context.Jobs.Remove(j);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task DeleteJob(Job j)
         {
             _context.Jobs.Remove(j);
             await _context.SaveChangesAsync();
@@ -45,21 +52,11 @@ namespace GestionTareas.Infraestructure.Repositories
         public async Task<Job> GetJob(int id)
         {
             return await _context.Jobs.FindAsync(id); 
-            
         }
 
         public async Task<List<Job>> GetAllJobs()
         {
             return await _context.Jobs.ToListAsync();
-        }
-
-        public async Task<List<Job>> GetJobForDate(DateTime begin, DateTime end)
-        {
-            return await _context.Jobs.Where(j => j.DueDate <= end && j.DueDate >= begin).ToListAsync();
-        }
-        public async Task<List<Job>> GetJobForState(State state)
-        {
-            return await _context.Jobs.Where(j => j.State == state).ToListAsync();
         }
 
         

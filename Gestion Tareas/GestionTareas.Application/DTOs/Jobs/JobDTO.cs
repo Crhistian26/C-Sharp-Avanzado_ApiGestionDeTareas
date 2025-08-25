@@ -1,12 +1,15 @@
-﻿using GestionTareas.Domain.Enums;
+﻿using GestionTareas.Domain.Entities;
+using GestionTareas.Domain.Enums;
+using Microsoft.VisualBasic;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Jobs;
+
 
 namespace GestionTareas.Application.DTOs.Jobs
 {
+
     public class JobDTO
     {
         public int Id { get; set; }
@@ -28,6 +31,15 @@ namespace GestionTareas.Application.DTOs.Jobs
             : this(description, dueDate, status, additionalData)
         {
             Id = id;
+        }
+
+        public JobDTO(Job job)
+        {
+            Id = job.Id;
+            Description = job.Description;
+            DueDate = job.DueDate;
+            State = job.State;
+            AdditionalData = job.AdditionalData;
         }
     }
 }

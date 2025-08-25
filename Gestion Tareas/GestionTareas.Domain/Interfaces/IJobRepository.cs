@@ -12,10 +12,9 @@ namespace GestionTareas.Domain.Interfaces
     {
         Task<Job> AddJob(Job j);
         Task<Job> UpdateJob(Job j);
-        void DeleteJob(Job j);
+        Task DeleteJob(int id);
+        Task DeleteJob(Job j);
         Task<List<Job>> GetAllJobs();
         Task<Job> GetJob(int id);
-        Task<List<Job>> GetJobForDate(DateTime begin, DateTime end);
-        Task<List<Job>> GetJobForState(State state);
     }
 }

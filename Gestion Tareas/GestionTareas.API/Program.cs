@@ -1,6 +1,11 @@
 
+using GestionTareas.API.Middleware;
+using GestionTareas.Application.Interfaces;
 using GestionTareas.Application.Services;
 using GestionTareas.Domain.Interfaces;
+using GestionTareas.Infraestructure.Context;
+using GestionTareas.Infraestructure.Repositories;
+using Microsoft.EntityFrameworkCore;
 
 namespace GestionTareas.API
 {
@@ -11,8 +16,11 @@ namespace GestionTareas.API
             var builder = WebApplication.CreateBuilder(args);
 
             // Add services to the container.
-            builder.Services.AddScoped<JobService>();
+            builder.Services.AddScoped<IJobServices,JobService>();
             builder.Services.AddScoped<IJobRepository, JobRepository>();
+
+            builder.Services.AddDbContext<JobContext>(
+                opt => opt.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
             builder.Services.AddControllers();
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -20,7 +28,7 @@ namespace GestionTareas.API
             builder.Services.AddSwaggerGen();
 
             var app = builder.Build();
-
+            app.UseMiddleware<ExceptionMiddleware>();
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
             {

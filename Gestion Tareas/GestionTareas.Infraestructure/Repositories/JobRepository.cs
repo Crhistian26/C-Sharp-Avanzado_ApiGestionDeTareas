@@ -10,6 +10,7 @@ using System.Linq;
 using System.Reflection.Metadata.Ecma335;
 using System.Text;
 using System.Threading.Tasks;
+using GestionTareas.Domain.Exceptions;
 
 namespace GestionTareas.Infraestructure.Repositories
 {
@@ -32,6 +33,11 @@ namespace GestionTareas.Infraestructure.Repositories
         public async Task DeleteJob(int id)
         {
             var j = await GetJob(id);
+            if (j == null)
+            {
+                throw new InfraestructureException("Error de infraestructura: No hay tareas con ese ID.");
+            }
+
             _context.Jobs.Remove(j);
             await _context.SaveChangesAsync();
         }
@@ -51,14 +57,19 @@ namespace GestionTareas.Infraestructure.Repositories
 
         public async Task<Job> GetJob(int id)
         {
-            return await _context.Jobs.FindAsync(id); 
+            Job j = await _context.Jobs.AsNoTracking().FirstOrDefaultAsync(x=> x.Id == id);
+            if (j == null)
+            {
+                throw new InfraestructureException("Error de infraestructura: No hay tareas con ese ID.");
+            }
+
+            return j;
         }
 
         public async Task<List<Job>> GetAllJobs()
         {
             return await _context.Jobs.ToListAsync();
         }
-
         
     }
 }

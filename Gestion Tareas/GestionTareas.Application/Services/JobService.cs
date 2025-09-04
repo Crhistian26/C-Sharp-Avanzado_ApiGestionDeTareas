@@ -2,6 +2,7 @@
 using GestionTareas.Application.Interfaces;
 using GestionTareas.Domain.Entities;
 using GestionTareas.Domain.Enums;
+using GestionTareas.Domain.Exceptions;
 using GestionTareas.Domain.Interfaces;
 using System;
 using System.Collections.Generic;
@@ -16,9 +17,11 @@ namespace GestionTareas.Application.Services
         private readonly IJobRepository _jobRepository;
 
         public JobService(IJobRepository job) => _jobRepository = job;
-        public Job ConvertirDTOaEntidad(CreateJobDTO dto)
+        #region Privados para conversion
+        private Job ConvertirDTOaEntidad(CreateJobDTO dto)
         {
             return new Job(
+                dto.Title,
                 dto.Description,
                 dto.DueDate,
                 dto.State,
@@ -26,21 +29,29 @@ namespace GestionTareas.Application.Services
             );
         }
 
-        public Job ConvertirDTOaEntidad(JobDTO dto)
+        private Job ConvertirDTOaEntidad(JobDTO dto)
         {
             return new Job(
                 dto.Id,
+                dto.Title,
                 dto.Description,
                 dto.DueDate,
                 dto.State,
                 dto.AdditionalData
             );
         }
-
+        #endregion
         public async Task<JobDTO> AddJob(CreateJobDTO j)
         {
 
             var job = ConvertirDTOaEntidad(j);
+
+            var list = await _jobRepository.GetAllJobs();
+            if(list.Select(x => x).Where(x => x.Title == job.Title).FirstOrDefault() != null)
+            {
+                throw new AppException("Ya existe una tarea con el mismo titulo.");
+            }
+
             var jobc = await _jobRepository.AddJob(job);
 
             var jobDTO = new JobDTO(jobc);
@@ -49,9 +60,15 @@ namespace GestionTareas.Application.Services
         }
         public async Task<JobDTO> UpdateJob(JobDTO j)
         {
-            var job = ConvertirDTOaEntidad(j);
+            
+            int id = j.Id;
+            if (await _jobRepository.GetJob(id) == null)
+            {
+                throw new AppException("No existe una tarea con ese ID.");
+            }
 
-            var jobc = await _jobRepository.UpdateJob(job);
+            var job = ConvertirDTOaEntidad(j);
+            Job jobc = await _jobRepository.UpdateJob(job);
 
             var jobDTO = new JobDTO(jobc);
 
@@ -59,11 +76,11 @@ namespace GestionTareas.Application.Services
         }
         public async Task DeleteJob(int id)
         {
-            var j = _jobRepository.GetJob(id);
+            var j = await _jobRepository.GetJob(id);
 
             if(j == null)
             {
-                throw new Exception("El id que registras no existe ya en la base de datos.");
+                throw new AppException("El id que registras no existe ya en la base de datos.");
             }
 
             await _jobRepository.DeleteJob(id);

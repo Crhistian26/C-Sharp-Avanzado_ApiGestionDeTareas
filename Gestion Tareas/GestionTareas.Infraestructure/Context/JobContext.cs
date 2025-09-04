@@ -14,7 +14,7 @@ namespace GestionTareas.Infraestructure.Context
         public JobContext (DbContextOptions options) : base (options) { }
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.UseSqlServer("Persist Security Info=False;Trusted_Connection=True;database=UberChino;server=(local);TrustServerCertificate=True;");
+            optionsBuilder.UseSqlServer("Persist Security Info=False;Trusted_Connection=True;database=GestionTareas;server=(local);TrustServerCertificate=True;");
         }
         public DbSet<Job> Jobs { get; set; }
     }

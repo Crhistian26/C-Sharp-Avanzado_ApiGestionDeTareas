@@ -1,5 +1,6 @@
 using GestionTareas.Application.DTOs.Jobs;
 using GestionTareas.Application.Interfaces;
+using GestionTareas.Domain.Entities;
 using GestionTareas.Domain.Exceptions;
 using Microsoft.AspNetCore.Mvc;
 
@@ -20,6 +21,7 @@ namespace GestionTareas.API.Controllers
         public async Task<ActionResult<IEnumerable<JobDTO>>> GetJobs()
         {
             var jobs = await _taskServices.GetAllJobs();
+            Console.WriteLine(jobs.First().Title);
             return Ok(jobs);
         }
 
@@ -31,7 +33,9 @@ namespace GestionTareas.API.Controllers
             {
                 throw new APIException("No hay una tarea con ese ID.");
             }
+            Console.WriteLine(job.Title);
             return Ok(job);
+
         }
 
         [HttpPost]

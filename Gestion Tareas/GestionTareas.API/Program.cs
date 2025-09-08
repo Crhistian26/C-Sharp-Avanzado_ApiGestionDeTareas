@@ -15,6 +15,14 @@ namespace GestionTareas.API
         {
             var builder = WebApplication.CreateBuilder(args);
 
+            builder.WebHost.ConfigureKestrel(options =>
+            {
+                options.ListenAnyIP(7215, options =>
+                {
+                    options.UseHttps();
+                });
+            });
+
             // Add services to the container.
             builder.Services.AddScoped<IJobServices,JobService>();
             builder.Services.AddScoped<IJobRepository, JobRepository>();

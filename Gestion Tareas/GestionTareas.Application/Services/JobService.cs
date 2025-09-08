@@ -41,21 +41,62 @@ namespace GestionTareas.Application.Services
             );
         }
         #endregion
+
+        #region Delegados
+
+        private static Func<CreateJobDTO,IJobRepository,Task> Comprobar =
+        async (j,repo) =>
+        {
+            if (j.Title.Trim().Length < 6)
+            {
+                throw new AppException("La tarea debe de tener un titulo de minimo 6 caracteres sin espacio.");
+            }
+
+            if (j.Description.Trim().Length < 15)
+            {
+                throw new AppException("La tarea de debe tener una descripcion mas larga.");
+            }
+
+            if (j.DueDate < DateTime.Now)
+            {
+                throw new AppException("La tarea no puede ser para antes del momento actual.");
+            }
+
+            if (j.State != State.Pendiente)
+            {
+                throw new AppException("La tarea debe estar en el estado 'Pendiente' o 0.");
+            }
+
+            List<Job> list = await repo.GetAllJobs();
+            if (list.Select(x => x.Title == j.Title).FirstOrDefault())
+            {
+                throw new AppException("Ya existe una tarea con ese titulo.");
+            }
+        };
+
+        private static Action<JobDTO> AvisoDeCreacion =
+        (j) =>
+        {
+            Console.WriteLine("Se creo con existo la tarea con el titulo de: " + j.Title);
+        };
+
+       
+
+        #endregion
+
         public async Task<JobDTO> AddJob(CreateJobDTO j)
         {
 
-            var job = ConvertirDTOaEntidad(j);
+            await Comprobar(j,_jobRepository);
 
-            var list = await _jobRepository.GetAllJobs();
-            if(list.Select(x => x).Where(x => x.Title == job.Title).FirstOrDefault() != null)
-            {
-                throw new AppException("Ya existe una tarea con el mismo titulo.");
-            }
+            var job = ConvertirDTOaEntidad(j);
 
             var jobc = await _jobRepository.AddJob(job);
 
             var jobDTO = new JobDTO(jobc);
 
+            AvisoDeCreacion(jobDTO);
+            
             return jobDTO;
         }
         public async Task<JobDTO> UpdateJob(JobDTO j)
